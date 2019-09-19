@@ -11,6 +11,7 @@ const session = require('express-session');
 const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const flash = require('connect-flash');
 
 const authData = {
   email: 'test123@gmail.com',
@@ -29,6 +30,7 @@ app.use(session({
   saveUninitialized: true,
   store: new FileStore()
 }))
+app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -50,7 +52,7 @@ passport.use(new LocalStrategy({
     console.log('LocalStrategy', username, password)
     if(username === authData.email) {
       if(password === authData.password) {
-        return done(null, authData)
+        return done(null, authData, { message: 'login success.' })
       } else {
         return done(null, false, { message: 'Incorrect password.' })
       }
@@ -62,7 +64,9 @@ passport.use(new LocalStrategy({
 
 app.post('/auth/login_process', passport.authenticate('local', {
   successRedirect: '/',
-  failureRedirect: '/auth/login'
+  failureRedirect: '/auth/login',
+  failureFlash: true,
+  successFlash: true
 }))
 
 // coustom middle
