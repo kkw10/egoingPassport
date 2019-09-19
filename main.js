@@ -9,6 +9,8 @@ const authRouter = require('./routes/auth');
 const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
 
 // middle
 app.use(helmet());
@@ -21,6 +23,8 @@ app.use(session({
   saveUninitialized: true,
   store: new FileStore()
 }))
+
+
 
 // coustom middle
 app.get('*', (req, res, next) => {
