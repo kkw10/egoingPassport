@@ -17,25 +17,10 @@ router.get('/login', (req, res) => {
   res.send(html);
 })
 
-// router.post('/login_process', (req, res) => {
-//   let post = req.body;
-//   let email = post.email;
-//   let password = post.pwd;
-  
-//   if(email === authData.email && password === authData.password) {
-//     req.session.is_logined = true;
-//     req.session.nickname = authData.nickname;
-//     req.session.save(() => {
-//       res.redirect(`/`)  
-//     })
-    
-//   } else {
-//     res.send("Who are you?")
-//   }
-// })
-
 router.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
+  req.logout();
+  
+  req.session.save(() => {
     res.redirect('/')
   })
 })
