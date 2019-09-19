@@ -3,21 +3,10 @@ const app = express();
 const fs = require('fs');
 const bodyParser = require('body-parser');
 const compression = require('compression');
-const indexRouter= require('./routes/index');
-const topicRouter = require('./routes/topic');
-const authRouter = require('./routes/auth');
 const helmet = require('helmet');
 const session = require('express-session');
 const FileStore = require('session-file-store')(session);
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const flash = require('connect-flash');
-
-const authData = {
-  email: 'test123@gmail.com',
-  password: '123',
-  nickname: 'tester'
-}
 
 // middle
 app.use(helmet());
@@ -32,42 +21,7 @@ app.use(session({
 }))
 app.use(flash());
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => {
-  console.log('serializeUser', user);
-  done(null, user.email)
-})
-
-passport.deserializeUser((id, done) => {
-  console.log('deserializeUser', id)
-  done(null, authData)
-})
-
-passport.use(new LocalStrategy({
-  usernameField: 'email',
-  passwordField: 'pwd'
-}, (username, password, done) => {
-    console.log('LocalStrategy', username, password)
-    if(username === authData.email) {
-      if(password === authData.password) {
-        return done(null, authData, { message: 'login success.' })
-      } else {
-        return done(null, false, { message: 'Incorrect password.' })
-      }
-    } else {
-      return done(null, false, { message: 'Incorrect email.' })
-    }
-  }
-))
-
-app.post('/auth/login_process', passport.authenticate('local', {
-  successRedirect: '/',
-  failureRedirect: '/auth/login',
-  failureFlash: true,
-  successFlash: true
-}))
+let passport = require('./lib/passport')(app);
 
 // coustom middle
 app.get('*', (req, res, next) => {
@@ -77,10 +31,15 @@ app.get('*', (req, res, next) => {
   })
 })
 
+
+const indexRouter= require('./routes/index');
+const topicRouter = require('./routes/topic');
+const authRouter = require('./routes/auth')(passport);
+
 // routing
 app.use('/', indexRouter)
 app.use('/topic', topicRouter)
-app.use('/auth', authRouter)
+app.use('/auth', authRouter);
 
 // error
 app.use((req, res, next) => {
